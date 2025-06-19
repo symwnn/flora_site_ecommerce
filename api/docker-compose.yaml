@@ -1,0 +1,23 @@
+services:
+  phpmyadmin:
+    container_name: flora-phpmyadmin
+    image: phpmyadmin
+    environment:
+      - PMA_HOST=flora-database
+    ports:
+      - "6060:80"
+    networks:
+      - flora-network
+
+  database:
+    container_name: flora-database
+    image: mariadb
+    environment:
+      - MARIADB_ROOT_PASSWORD=admin
+    ports:
+      - "3306:3306"
+    networks:
+      - flora-network
+
+networks:
+  flora-network:
