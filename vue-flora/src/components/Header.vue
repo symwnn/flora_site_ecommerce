@@ -7,7 +7,7 @@
     </div>
 
     <div class="header-title">
-      <h1>flora.fr</h1>
+      <img src="./../../public/iconss/Flora.fr.png" alt="Flora Logo" />
     </div>
 
     <div class="icons">
@@ -53,7 +53,14 @@
   left: 50%;
   transform: translateX(-50%);
   text-align: center;
-}
+  }
+  
+  .header-title img {
+    height: 50%;
+    width: 50%;
+    transform: translateY(5px);
+  }
+
 
 .header-title h1 {
   margin: 0;

@@ -143,24 +143,114 @@ app.get('/api/admin/users', authMiddleware, adminMiddleware, (req, res) => {
   });
 });
 
-app.put('/api/users', authMiddleware, (req, res) => {
+app.put('/api/users', authMiddleware, async (req, res) => {
   const { login, password } = req.user;
-  const { email, firstname, lastname } = req.body;
+  const { email, firstname, lastname, newPassword, login: newLogin } = req.body;
 
-  const checkUserSql = 'SELECT * FROM users WHERE login = ?';
-  db.query(checkUserSql, [login], async (err, results) => {
-    if (err || results.length === 0) return res.status(401).json({ error: 'Unauthorized' });
+  console.log('Données reçues:', req.body);
+  console.log('Utilisateur authentifié:', req.user);
+  console.log('newLogin extrait:', newLogin);
 
-    const user = results[0];
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) return res.status(401).json({ error: 'Unauthorized' });
-
-    const updateSql = 'UPDATE users SET email = ?, firstname = ?, lastname = ? WHERE login = ?';
-    db.query(updateSql, [email, firstname, lastname, login], (err) => {
-      if (err) return res.status(500).json({ error: 'Update failed' });
-      res.json({ message: 'User updated' });
+  try {
+    // Vérifier l'utilisateur actuel
+    const checkUserSql = 'SELECT * FROM users WHERE login = ?';
+    const userResults = await new Promise((resolve, reject) => {
+      db.query(checkUserSql, [login], (err, results) => {
+        if (err) reject(err);
+        else resolve(results);
+      });
     });
-  });
+
+    if (userResults.length === 0) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const user = userResults[0];
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Vérifier si le nouveau login existe déjà (si fourni et différent de l'actuel)
+    if (newLogin && newLogin.trim() !== '' && newLogin !== login) {
+      const checkNewLoginSql = 'SELECT * FROM users WHERE login = ?';
+      const loginResults = await new Promise((resolve, reject) => {
+        db.query(checkNewLoginSql, [newLogin], (err, results) => {
+          if (err) reject(err);
+          else resolve(results);
+        });
+      });
+
+      if (loginResults.length > 0) {
+        return res.status(400).json({ error: 'Login already exists' });
+      }
+    }
+
+    // Préparer les données de mise à jour
+    const finalLogin = (newLogin && newLogin.trim() !== '') ? newLogin : login;
+    let updateSql, updateParams;
+
+    console.log('Final login qui sera utilisé:', finalLogin);
+
+    // Si on change le login, il faut d'abord mettre à jour les tables liées
+    if (newLogin && newLogin.trim() !== '' && newLogin !== login) {
+      // Mettre à jour les commandes d'abord
+      await new Promise((resolve, reject) => {
+        db.query('UPDATE orders SET user_login = ? WHERE user_login = ?', [newLogin, login], (err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
+
+      // Mettre à jour le panier
+      await new Promise((resolve, reject) => {
+        db.query('UPDATE cart SET user_login = ? WHERE user_login = ?', [newLogin, login], (err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
+    }
+
+    // Si un nouveau mot de passe est fourni, le hasher
+    if (newPassword && newPassword.trim() !== '') {
+      const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+      updateSql = 'UPDATE users SET login = ?, email = ?, firstname = ?, lastname = ?, password = ? WHERE id = ?';
+      updateParams = [finalLogin, email, firstname, lastname, hashedNewPassword, user.id];
+    } else {
+      // Sinon, mettre à jour seulement les autres champs
+      updateSql = 'UPDATE users SET login = ?, email = ?, firstname = ?, lastname = ? WHERE id = ?';
+      updateParams = [finalLogin, email, firstname, lastname, user.id];
+    }
+
+    console.log('SQL:', updateSql);
+    console.log('Paramètres:', updateParams);
+
+    // Exécuter la mise à jour de l'utilisateur
+    await new Promise((resolve, reject) => {
+      db.query(updateSql, updateParams, (err) => {
+        if (err) {
+          console.error('Erreur SQL:', err);
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    });
+
+    // Message différent selon les changements effectués
+    let message = 'User updated';
+    if (newPassword && newPassword.trim() !== '') message += ' with new password';
+    if (newLogin && newLogin.trim() !== '' && newLogin !== login) message += ' and new login';
+
+    res.json({ 
+      message,
+      login: finalLogin // Retourner le login final
+    });
+
+  } catch (error) {
+    console.error('Update error:', error);
+    res.status(500).json({ error: 'Update failed', details: error.message });
+  }
 });
 
 // --- PRODUCTS ---
