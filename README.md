@@ -1,22 +1,22 @@
 # Flora - Site E-commerce Full Stack
 
-Bienvenue sur **Flora**, mon projet de site e-commerce développé avec passion dans le cadre de ma formation à Epitech Digital School.
+Welcome to **Flora**, my e-commerce website project developed with passion as part of my coursework at Epitech Digital School.
 
-Ce site permet la vente de produits (ex: fleurs) avec une interface utilisateur intuitive, une gestion admin et un système de paiement sécurisé.
+This site allows the sale of products (e.g. flowers) with an intuitive user interface, admin management, and a secure payment system
 
 ---
 
-##  Fonctionnalités principales
+##  Key Features
 
--  Authentification et inscription des utilisateurs
--  Catalogue de produits
--  Ajout au panier et gestion en temps réel
--  Paiement sécurisé avec Stripe
--  Back-office pour gérer les produits (admin)
--  Suivi des commandes
+-  User authentication and registration
+-  Product catalog
+-  Add to cart and real-time management
+-  Secure payment with Stripe
+-  Back-office to manage products (admin)
+-  Order tracking
 ---
 
-##  Technologies utilisées
+##  Technologies Used
 
 ### Frontend
 
@@ -29,22 +29,22 @@ Ce site permet la vente de produits (ex: fleurs) avec une interface utilisateur 
 - Javascipt
 - mysql
 
-### Paiement
+### Payment
 
 - Stripe API
 
 ---
 
-##  Installation du projet
+##  Project Installation
 
-### 1. Cloner le dépôt
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/symwnn/rattrapage_final.git
 cd rattrapage_final
 ```
 
-## 2. Lancer le Backend
+## 2. Launch the Backend
 
 ```bash
 cd api
@@ -52,7 +52,7 @@ npm install
 node index.js
 ```
 
-## 3. Lancer le Frontend
+## 3. Launch the Frontend
 
 ```bash
 cd vue-flora
@@ -60,10 +60,10 @@ npm install
 npm run dev
 ```
 
-##  Données de test Stripe
+##  Stripe Test Data
 
-Utilisez ces données en mode test pour passer une commande :
+Use these credentials in test mode to place an order:
 
-- **Carte** : `4242 4242 4242 4242`
-- **Date d'expiration** : 12/34
+- **Card** : `4242 4242 4242 4242`
+- **Expiration date** : 12/34
 - **CVC** : 567
