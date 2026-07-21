@@ -1,4 +1,4 @@
-# Flora - Site E-commerce Full Stack
+# Flora - Full Stack E-commerce Website
 
 Welcome to **Flora**, my e-commerce website project developed with passion as part of my coursework at Epitech Digital School.
 
